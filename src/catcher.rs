@@ -1,5 +1,10 @@
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    sprite::collide_aabb::{collide, Collision},
+};
 use rand::prelude::*;
+
+use crate::player::Unko;
 
 const CATCHER_NUMS: usize = 5;
 
@@ -8,7 +13,8 @@ pub struct CatcherPlugin;
 impl Plugin for CatcherPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_catchers)
-            .add_system(move_catchers);
+            .add_system(move_catchers)
+            .add_system(catch_unko);
     }
 }
 
@@ -72,10 +78,38 @@ fn move_catchers(
 ) {
     let h_width = windows.get_primary().unwrap().width() / 2.;
     for (mut transform, mut catcher) in catchers.iter_mut() {
-        if transform.translation.x < -h_width || h_width < transform.translation.x {
+        let next_pos = transform.translation + Vec3::X * catcher.speed * time.delta_seconds();
+        let min = Vec3::new(-h_width, transform.translation.y, 0.);
+        let max = Vec3::new(h_width, transform.translation.y, 0.);
+        transform.translation = next_pos.clamp(min, max);
+
+        if transform.translation.x <= -h_width || h_width <= transform.translation.x {
             catcher.speed *= -1.;
         }
+    }
+}
 
-        transform.translation += Vec3::X * catcher.speed * time.delta_seconds();
+fn catch_unko(
+    mut commands: Commands,
+    mut catchers: Query<(&Transform, &mut Catcher, &Sprite)>,
+    unkos: Query<(Entity, &Transform, &Sprite), With<Unko>>,
+) {
+    for (c_trans, mut catcher, c_spr) in catchers.iter_mut() {
+        for (u_e, u_trans, u_spr) in unkos.iter() {
+            if let Some(collision) = collide(
+                c_trans.translation,
+                c_spr.custom_size.unwrap_or_default(),
+                u_trans.translation,
+                u_spr.custom_size.unwrap_or_default(),
+            ) {
+                match collision {
+                    Collision::Inside => {}
+                    _ => {
+                        catcher.count += 1;
+                        commands.entity(u_e).despawn_recursive();
+                    }
+                }
+            }
+        }
     }
 }
