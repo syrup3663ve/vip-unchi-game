@@ -3,6 +3,7 @@ use rand::prelude::*;
 
 mod catcher;
 mod player;
+mod rule;
 
 fn main() {
     let mut app = App::new();
@@ -18,6 +19,7 @@ fn main() {
     .add_startup_system(setup)
     .add_plugin(player::PlayerPlugin)
     .add_plugin(catcher::CatcherPlugin)
+    .add_plugin(rule::RulePlugin)
     .run();
 }
 
