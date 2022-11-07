@@ -2,9 +2,7 @@
 VIP de 1hour game development
 
 # Play
-1. `git clone https://github.com/syrup3663ve/vip-unchi-game.git`
-2. `cd vip-unchi-game`
-3. `cargo run --release`
+https://vipunkogame.web.app/
 
 |key |action|  
 |--- |----------|  
@@ -19,10 +17,6 @@ VIP de 1hour game development
 - Baseball gorilla
 - Beautiful girl
 - Fighting game
-
-## Todo
-- Catching
-- Refactoring
 
 ## Info
 2022/11/06

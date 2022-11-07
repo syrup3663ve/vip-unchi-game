@@ -1,3 +1,4 @@
+use bevy::log::{Level, LogSettings};
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -10,11 +11,19 @@ mod rule;
 fn main() {
     let mut app = App::new();
 
+    if !cfg!(debug_assertions) {
+        app.insert_resource(LogSettings {
+            filter: "error".into(),
+            level: Level::ERROR,
+        });
+    }
+
     app.insert_resource(WindowDescriptor {
         width: 480.,
         height: 480.,
         title: "Vip-Unchi".to_string(),
         resizable: false,
+        canvas: Some("canvas".to_string()),
         ..default()
     })
     .add_plugins(DefaultPlugins)
