@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
 const SPEED: f32 = 500.;
+const PLAYER_SIZE: [f32; 2] = [72., 72.];
+const PLAYER_IMAGE_PATH: &str = "unko-spawner.png";
+const UNKO_IMAGE_PATH: &str = "unko.png";
 
 pub struct PlayerPlugin;
 
@@ -19,10 +22,10 @@ pub struct Player;
 fn setup_player(mut commands: Commands, server: Res<AssetServer>) {
     let sprite_bundle = SpriteBundle {
         sprite: Sprite {
-            custom_size: Some(Vec2::splat(72.)),
+            custom_size: Some(PLAYER_SIZE.into()),
             ..default()
         },
-        texture: server.load("unko-spawner.png"),
+        texture: server.load(PLAYER_IMAGE_PATH),
         ..default()
     };
     commands
@@ -84,16 +87,16 @@ fn fire_unko(
         spawner.timer.tick(time.delta());
 
         if spawner.timer.finished() && inputs.pressed(KeyCode::LShift) {
-            let unko = SpriteBundle {
+            let sprite_bundle = SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(Vec2::splat(48.)),
                     ..default()
                 },
-                texture: server.load("unko.png"),
+                texture: server.load(UNKO_IMAGE_PATH),
                 transform: *trans,
                 ..default()
             };
-            commands.spawn_bundle(unko).insert(Unko);
+            commands.spawn_bundle(sprite_bundle).insert(Unko);
 
             spawner.timer.reset();
         }
@@ -106,7 +109,7 @@ fn move_unko(
     mut unkos: Query<(Entity, &mut Transform), With<Unko>>,
 ) {
     for (e, mut transform) in unkos.iter_mut() {
-        transform.translation += Vec3::Y * time.delta_seconds() * 500.;
+        transform.translation += Vec3::Y * time.delta_seconds() * SPEED;
 
         if is_outside(&transform.translation) {
             commands.entity(e).despawn_recursive();

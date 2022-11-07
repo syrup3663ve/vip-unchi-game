@@ -2,8 +2,11 @@ use bevy::prelude::*;
 
 use crate::catcher::{Catcher, MainCatcher};
 
-const FONT_PATH: &str = "tiza.ttf";
+pub const FONT_PATH: &str = "tiza.ttf";
 const FONT_SIZE: f32 = 32.;
+const FONT_COLOR: [f32; 3] = [0., 0., 0.];
+
+const GAME_OVER_TEXT: &str = "GAME OVER";
 
 pub struct RulePlugin;
 
@@ -12,7 +15,7 @@ impl Plugin for RulePlugin {
         app.insert_resource(GameTimer(Timer::from_seconds(10., false)))
             .add_startup_system(setup_ui)
             .add_system(advance_game_timer)
-            .add_system(update_game_count_text);
+            .add_system(update_game_timer_text);
     }
 }
 
@@ -20,8 +23,8 @@ pub struct GameTimer(pub Timer);
 
 fn advance_game_timer(
     time: Res<Time>,
-    main_catcher: Query<&Catcher, With<MainCatcher>>,
     mut game_timer: ResMut<GameTimer>,
+    main_catcher: Query<&Catcher, With<MainCatcher>>,
     mut game_over_texts: Query<(&mut Visibility, &mut Text), With<GameOverText>>,
 ) {
     if game_timer.0.tick(time.delta()).just_finished() {
@@ -67,7 +70,7 @@ fn setup_ui(mut commands: Commands, server: Res<AssetServer>) {
                 TextStyle {
                     font: server.load(FONT_PATH),
                     font_size: FONT_SIZE,
-                    color: Color::BLACK,
+                    color: FONT_COLOR.into(),
                 },
             );
             p.spawn_bundle(text_bundle).insert(GameTimerText);
@@ -87,13 +90,12 @@ fn setup_ui(mut commands: Commands, server: Res<AssetServer>) {
             ..default()
         })
         .with_children(|p| {
-            let font = server.load(FONT_PATH);
             let mut text_bundle = TextBundle::from_section(
-                "GAME OVER\n".to_string(),
+                format!("{GAME_OVER_TEXT}\n"),
                 TextStyle {
-                    font,
+                    font: server.load(FONT_PATH),
                     font_size: FONT_SIZE,
-                    color: Color::BLACK,
+                    color: FONT_COLOR.into(),
                 },
             );
             text_bundle.visibility.is_visible = false;
@@ -101,7 +103,7 @@ fn setup_ui(mut commands: Commands, server: Res<AssetServer>) {
         });
 }
 
-fn update_game_count_text(
+fn update_game_timer_text(
     game_timer: Res<GameTimer>,
     mut game_timer_texts: Query<&mut Text, With<GameTimerText>>,
 ) {

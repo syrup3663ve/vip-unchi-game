@@ -1,11 +1,11 @@
-use bevy::{
-    prelude::*,
-    sprite::collide_aabb::{collide, Collision},
-};
+use bevy::prelude::*;
+use bevy::sprite::collide_aabb::{collide, Collision};
 use rand::prelude::*;
 
 use crate::player::Unko;
 
+const CATCHER_IMAGE_PATH: &str = "unko-man.png";
+const CATCHER_SIZE: [f32; 2] = [64., 64.];
 const CATCHER_NUMS: usize = 5;
 
 pub struct CatcherPlugin;
@@ -31,7 +31,7 @@ fn setup_catchers(windows: Res<Windows>, mut commands: Commands, server: Res<Ass
         };
         let sprite = Sprite {
             color,
-            custom_size: Some(Vec2::splat(64.)),
+            custom_size: Some(CATCHER_SIZE.into()),
             ..default()
         };
         let range_x = (-window.width() / 2.0)..=window.width() / 2.0;
@@ -39,12 +39,14 @@ fn setup_catchers(windows: Res<Windows>, mut commands: Commands, server: Res<Ass
         let y = (window.height() / 2.) - i as f32 * 50. - 50.;
         let sprite_bundle = SpriteBundle {
             sprite,
-            texture: server.load("unko-man.png"),
+            texture: server.load(CATCHER_IMAGE_PATH),
             transform: Transform::from_xyz(x, y, 0.),
             ..default()
         };
 
-        let speed = [-500, -400, -300, 300, 400, 500].choose(&mut rng).unwrap();
+        let speed = [-500, -400, -300, 300, 400, 500]
+            .choose(&mut rng)
+            .unwrap_or(&300);
         let e = commands
             .spawn_bundle(sprite_bundle)
             .insert(Catcher::new(*speed as f32))
@@ -76,12 +78,13 @@ fn move_catchers(
     time: Res<Time>,
     mut catchers: Query<(&mut Transform, &mut Catcher)>,
 ) {
-    let h_width = windows.get_primary().unwrap().width() / 2.;
+    let window = windows.get_primary().unwrap();
+
     for (mut transform, mut catcher) in catchers.iter_mut() {
-        let next_pos = transform.translation + Vec3::X * catcher.speed * time.delta_seconds();
-        let min = Vec3::new(-h_width, transform.translation.y, 0.);
-        let max = Vec3::new(h_width, transform.translation.y, 0.);
-        transform.translation = next_pos.clamp(min, max);
+        let h_width = window.width() / 2.0;
+        let x = (transform.translation.x + catcher.speed * time.delta_seconds())
+            .clamp(-h_width, h_width);
+        transform.translation.x = x;
 
         if transform.translation.x <= -h_width || h_width <= transform.translation.x {
             catcher.speed *= -1.;

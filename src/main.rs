@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
+const GRASS_FONT_SIZE: f32 = 12.;
+
 mod catcher;
 mod player;
 mod rule;
@@ -27,23 +29,21 @@ fn setup(mut commands: Commands, server: Res<AssetServer>, windows: Res<Windows>
     commands.spawn_bundle(Camera2dBundle::default());
 
     let window = windows.get_primary().unwrap();
+    let font = server.load(rule::FONT_PATH);
     let mut rng = thread_rng();
-
     let mut grasses = vec![];
     for y in ((-window.width() as i32 / 2)..=(window.width() as i32 / 2)).step_by(15) {
         for x in ((-window.height() as i32 / 2)..=(window.height() as i32 / 2)).step_by(15) {
             let r = rng.gen_range(0.0..=0.2);
             let g = rng.gen_range(0.5..=1.);
             let b = rng.gen_range(0.0..=0.2);
-            let color = Color::rgb(r, g, b);
-
             let grass = Text2dBundle {
                 text: Text::from_section(
                     "w",
                     TextStyle {
-                        font: server.load("tiza.ttf"),
-                        font_size: 12.,
-                        color,
+                        font: font.clone(),
+                        font_size: GRASS_FONT_SIZE,
+                        color: Color::rgb(r, g, b),
                     },
                 ),
                 transform: Transform::from_xyz(x as f32, y as f32, 0.),
