@@ -2,7 +2,7 @@
 VIP de 1hour game development
 
 # Play
-https://vipunkogame.web.app/
+https://vipunkogame-6ffa9.web.app/
 
 |key |action|  
 |--- |----------|  
